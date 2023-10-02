@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "stack_attention"
+version = "1.0.0"
+description = "Code for the paper \"Stack Attention: Improving the Ability of Transformers to Model Hierarchical Patterns\""
+authors = ["Anonymous"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+torch = "^1.12.0"
+numpy = "^1.19.0"
+attrs = "^20.2.0"
+tikzplotlib = "0.9.17"
+more-itertools = "^8.6.0"
+scipy = "^1.5.4"
+matplotlib = "3.5.3"
+humanize = "^3.12.0"
+torch-semiring-einsum = {git = "https://github.com/bdusell/semiring-einsum", rev = "d24f0d87b6060f975e84c0214f523475c59d4888"}
+pytest = "^7.1.2"
+scikit-learn = "^1.1.2"
+beautifulsoup4 = "^4.11.1"
+sphinx = "^6.1.3"
+sphinx-autodoc-typehints = "^1.20.2"
+mypy = "^0.991"
+sacrebleu = "^2.3.1"
+tqdm = "^4.65.0"
+humanfriendly = "^10.0"
+bllipparser = "^2021.11.7"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

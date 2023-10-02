@@ -1,0 +1,3 @@
+IMAGE=stack-attention
+DEV_IMAGE=$IMAGE-dev
+SINGULARITY_IMAGE=$IMAGE
