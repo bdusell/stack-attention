@@ -1,8 +1,8 @@
 # Stack Attention: Improving the Ability of Transformers to Model Hierarchical Patterns
 
-This repository contains the code for the paper "Stack Attention: Improving
-the Ability of Transformers to Model Hierarchical Patterns" (DuSell and
-Chiang, 2023). It includes all of the code necessary to reproduce the
+This repository contains the code for the paper
+["Stack Attention: Improving the Ability of Transformers to Model Hierarchical Patterns"](https://arxiv.org/abs/2310.01749)
+(DuSell and Chiang, 2023). It includes all of the code necessary to reproduce the
 experiments and figures used in the paper, as well as a Docker image definition
 that can be used to replicate the software environment it was developed in.
 
@@ -219,3 +219,17 @@ downloaded and preprocessed using these scripts:
   before training any models.
 * `submit_varying_size_jobs.bash`: Train and evaluate all models.
 * `print_varying_size_table.bash`: Print the table of scores.
+
+## Citation
+
+```bibtex
+@misc{dusell-chiang-2023-stack,
+    title = "Stack Attention: {I}mproving the Ability of Transformers to Model Hierarchical Patterns",
+    author = "DuSell, Brian and Chiang, David",
+    year = "2023",
+    month = oct,
+    url = "https://arxiv.org/abs/2310.01749",
+    doi = "10.48550/arXiv.2310.01749",
+    note = "{arXiv}:2310.01749"
+}
+```
