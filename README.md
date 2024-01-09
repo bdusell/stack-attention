@@ -138,12 +138,12 @@ If you want to run the PTB language modeling experiments, you must obtain a
 copy of the raw CD-ROM files (we are not able to distribute these due to
 licensing restrictions). Make sure that these files can be found at
 `data/ptb/`, either by copying the files or creating a symlink. Specifically,
-only one sub-directory of the PTB distribution is needed;
+only one sub-directory of the PTB distribution is needed:
 `data/ptb/dist/treebank_3/parsed/mrg/wsj/` needs to have the contents of
 `dist/treebank_3/parsed/mrg/wsj/` from the PTB distribution.
 
-The following script will take care some setup tasks for you (if you are using
-a container, you must run this *inside the container shell*):
+The following script will take care of some setup tasks for you (if you are
+using a container, you must run this *inside the container shell*):
 
     $ bash scripts/setup.bash
 
@@ -224,7 +224,7 @@ downloaded and preprocessed using these scripts:
 
 ```bibtex
 @misc{dusell-chiang-2023-stack,
-    title = "Stack Attention: {I}mproving the Ability of Transformers to Model Hierarchical Patterns",
+    title = "Stack Attention: Improving the Ability of Transformers to Model Hierarchical Patterns",
     author = "DuSell, Brian and Chiang, David",
     year = "2023",
     month = oct,
