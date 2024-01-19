@@ -2,7 +2,7 @@ set -e
 set -u
 set -o pipefail
 
-BASE_DIR=$(cd $(dirname "$BASH_SOURCE")/.. && pwd)
+BASE_DIR=$(cd "$(dirname "$BASH_SOURCE")"/.. && pwd)
 DEFAULT_SECTIONS_DIR=$BASE_DIR/data/ptb/dist/treebank_3/parsed/mrg/wsj
 OUTPUT_DIR=$BASE_DIR/data/language-modeling
 
