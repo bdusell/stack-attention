@@ -46,21 +46,6 @@ ENV PATH /usr/local/poetry/bin:${PATH}
 # Stores Python packages in the local directory.
 # See https://python-poetry.org/docs/configuration/#virtualenvsin-project-boolean
 ENV POETRY_VIRTUALENVS_IN_PROJECT true
-# Install the Docker client.
-RUN apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        apt-transport-https \
-        ca-certificates \
-        gnupg-agent \
-        software-properties-common \
-        && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - && \
-    add-apt-repository \
-       "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" && \
-    apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        docker-ce-cli && \
-    rm -rf /var/lib/apt/lists/*
 # Install git.
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \

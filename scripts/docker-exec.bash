@@ -33,7 +33,6 @@ done
 bash scripts/get-docker-image.bash "${get_options[@]}"
 dockerdev_ensure_dev_container_started "$DEV_IMAGE" \
   --x11 \
-  --docker \
   -- \
   -v "$PWD":/app/ \
   "${start_options[@]}"
