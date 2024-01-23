@@ -210,9 +210,6 @@ The relevant scripts are under `experiments/language-modeling`.
 
 The relevant scripts are under `experiments/machine-translation`.
 
-Before running the machine translation experiments, the datasets must be
-downloaded and preprocessed using these scripts:
-
 * `submit_download_data_jobs.bash`: Download all datasets. This must be run
   first.
 * `submit_preprocess_data_jobs.bash`: Preprocess all datasets. This must be run
