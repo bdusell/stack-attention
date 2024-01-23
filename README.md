@@ -2,7 +2,7 @@
 
 This repository contains the code for the paper
 ["Stack Attention: Improving the Ability of Transformers to Model Hierarchical Patterns"](https://arxiv.org/abs/2310.01749)
-(DuSell and Chiang, 2023). It includes all of the code necessary to reproduce the
+(DuSell and Chiang, 2024). It includes all of the code necessary to reproduce the
 experiments and figures used in the paper, as well as a Docker image definition
 that can be used to replicate the software environment it was developed in.
 
@@ -223,13 +223,13 @@ downloaded and preprocessed using these scripts:
 ## Citation
 
 ```bibtex
-@misc{dusell-chiang-2023-stack,
+@inproceedings{dusell-chiang-2024-stack,
     title = "Stack Attention: Improving the Ability of Transformers to Model Hierarchical Patterns",
     author = "DuSell, Brian and Chiang, David",
-    year = "2023",
-    month = oct,
-    url = "https://arxiv.org/abs/2310.01749",
-    doi = "10.48550/arXiv.2310.01749",
-    note = "{arXiv}:2310.01749"
+    booktitle = "The Twelfth International Conference on Learning Representations",
+    year = "2024",
+    month = may,
+    address = "Vienna, Austria",
+    url = "https://openreview.net/forum?id=XVhm3X8Fum"
 }
 ```
