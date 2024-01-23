@@ -20,7 +20,8 @@ class TestJoulinMikolovRNN(unittest.TestCase):
         model = JoulinMikolovRNN(
             input_size=input_size,
             stack_embedding_size=stack_embedding_size,
-            controller=controller
+            controller=controller,
+            controller_output_size=hidden_units
         )
         for p in model.parameters():
             p.data.uniform_(generator=generator)
@@ -59,7 +60,8 @@ class TestJoulinMikolovRNN(unittest.TestCase):
         model = JoulinMikolovRNN(
             input_size=input_size,
             stack_embedding_size=stack_embedding_size,
-            controller=controller
+            controller=controller,
+            controller_output_size=hidden_units
         )
         for p in model.parameters():
             p.data.uniform_(generator=generator)
@@ -98,7 +100,8 @@ class TestJoulinMikolovRNN(unittest.TestCase):
         model = JoulinMikolovRNN(
             input_size=input_size,
             stack_embedding_size=stack_embedding_size,
-            controller=controller
+            controller=controller,
+            controller_output_size=hidden_units
         )
         for name, p in model.named_parameters():
             p.data.uniform_(generator=generator)
@@ -125,13 +128,16 @@ class TestJoulinMikolovRNN(unittest.TestCase):
         model = JoulinMikolovRNN(
             input_size=input_size,
             stack_embedding_size=stack_embedding_size,
-            controller=controller
+            controller=controller,
+            controller_output_size=hidden_units
         )
         for name, p in model.named_parameters():
             p.data.uniform_(generator=generator)
         input_tensor = torch.empty(batch_size, input_length, input_size)
         input_tensor.uniform_(generator=generator)
-        predicted_tensor, actions = model(input_tensor, return_actions=True)
+        result = model(input_tensor, return_actions=True)
+        predicted_tensor = result.output
+        actions, = result.extra_outputs
         self.assertIsInstance(predicted_tensor, torch.Tensor)
         self.assertEqual(
             predicted_tensor.size(),
@@ -141,15 +147,16 @@ class TestJoulinMikolovRNN(unittest.TestCase):
         self.assertIsInstance(actions, list)
         self.assertEqual(len(actions), input_length + 1)
         # The actions returned at each timestep represent the actions emitted
-        # after the previous timestep to compute the current timestep.
-        # The actions for the first two timesteps should be None. For timestep
-        # 0, it is None because the initial state has no previous state and no
-        # previous actions. For timestep 1, it is None because the stack is
-        # initialized from scratch just before that timstep, so again there are
-        # no previous stack actions.
-        for action in actions[:2]:
+        # by the hidden state for that timestep (in other words, just after
+        # reading the input at that timestep). Timesteps start at 0, which
+        # corresponds to the initial hidden state before reading any inputs.
+        # The actions at timestep 0 are always None, because the hidden state
+        # does not emit actions, because the stack is initialized at timestep
+        # 0. The actions at the last timestep are None because they are not
+        # needed by the RNN.
+        for action in (actions[0], actions[-1]):
             self.assertIsNone(action)
-        for action in actions[2:]:
+        for action in actions[1:-1]:
             self.assertIsInstance(action, torch.Tensor)
             self.assertEqual(action.size(), (batch_size, 1, 3))
 
@@ -166,6 +173,7 @@ class TestJoulinMikolovRNN(unittest.TestCase):
             input_size=input_size,
             stack_embedding_size=stack_embedding_size,
             controller=controller,
+            controller_output_size=hidden_units,
             push_hidden_state=True,
             stack_depth_limit=10
         )
@@ -180,12 +188,14 @@ class TestJoulinMikolovRNN(unittest.TestCase):
         self.assertEqual(state.batch_size(), batch_size)
         input_tensor = torch.empty(batch_size, sequence_length, input_size)
         input_tensor.uniform_(-1, 1, generator=generator)
-        predicted_tensor, state = model(
+        result = model(
             input_tensor,
             initial_state=state,
             return_state=True,
             include_first=False
         )
+        predicted_tensor = result.output
+        state = result.state
         state = state.detach()
         self.assertEqual(
             predicted_tensor.size(),
@@ -209,12 +219,14 @@ class TestJoulinMikolovRNN(unittest.TestCase):
         optimizer.zero_grad()
         input_tensor = torch.empty(batch_size, sequence_length, input_size)
         input_tensor.uniform_(-1, 1, generator=generator)
-        predicted_tensor, state = model(
+        result = model(
             input_tensor,
             initial_state=state,
             return_state=True,
             include_first=False
         )
+        predicted_tensor = result.output
+        state = result.state
         state = state.detach()
         self.assertEqual(
             predicted_tensor.size(),

@@ -226,6 +226,7 @@ class Unidirectional(torch.nn.Module):
                 result.state = state
                 return result
             else:
+                from .util import unwrap_output_tensor
                 return unwrap_output_tensor(_stack_outputs(self.outputs(input_sequence, include_first)))
 
     def initial_state(self,

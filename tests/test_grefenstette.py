@@ -19,7 +19,8 @@ class TestGrefenstetteRNN(unittest.TestCase):
         model = GrefenstetteRNN(
             input_size=input_size,
             stack_embedding_size=stack_embedding_size,
-            controller=controller
+            controller=controller,
+            controller_output_size=hidden_units
         )
         for p in model.parameters():
             p.data.uniform_(generator=generator)

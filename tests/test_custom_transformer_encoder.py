@@ -60,11 +60,13 @@ def test_custom_matches_builtin():
         use_output=False,
         require_output=False
     )
-    def construct_model(use_standard_encoder):
+    model_interface.block_size = 10
+    def construct_model(use_standard_module):
         return model_interface.construct_model(
             encoder_layers='3',
-            use_standard_encoder=use_standard_encoder,
+            use_standard_encoder=use_standard_module,
             decoder_layers='3',
+            use_standard_decoder=use_standard_module,
             d_model=32,
             num_heads=4,
             feedforward_size=128,
