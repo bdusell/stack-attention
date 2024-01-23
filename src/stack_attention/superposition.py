@@ -53,13 +53,14 @@ class SuperpositionStackAttention(StackAttention):
         pushed_vector: torch.Tensor
     ) -> DifferentiableStack:
         # action_tensor : batch_size x 3
-        # action_probs : batch_size x 3
-        action_probs = torch.nn.functional.softmax(action_tensor, dim=1)
         d_model = pushed_vector.size(1)
         # push_prob, etc. : batch_size x d_model
         push_prob, pop_prob, noop_prob = (
             # prob : batch_size
             prob[:, None].expand(-1, d_model)
-            for prob in torch.unbind(action_probs, dim=1)
+            for prob in torch.unbind(action_tensor, dim=1)
         )
         return stack.next(push_prob, pop_prob, noop_prob, pushed_vector)
+
+    def transform_actions(self, actions: torch.Tensor) -> torch.Tensor:
+        return torch.nn.functional.softmax(actions, dim=-1)

@@ -1,6 +1,8 @@
 from collections.abc import Callable, Iterable
+import dataclasses
 from typing import Any, Union
 
+import more_itertools
 import torch
 
 from stack_rnn_models.stack import DifferentiableStack
@@ -22,18 +24,12 @@ class StackAttention(Unidirectional):
         self.stack_reading_size = stack_reading_size
         self.stack_reading_to_output_layer = Layer(stack_reading_size, d_model, bias=False)
 
+    @dataclasses.dataclass
     class State(Unidirectional.State):
 
         parent: 'StackAttention'
         stack: DifferentiableStack
-
-        def __init__(self,
-            parent: 'StackAttention',
-            stack: DifferentiableStack
-        ):
-            super().__init__()
-            self.parent = parent
-            self.stack = stack
+        return_actions: bool
 
         def next(self, input_tensor: torch.Tensor) -> Unidirectional.State:
             # TODO It should be possible to compute all the actions and pushed
@@ -41,11 +37,11 @@ class StackAttention(Unidirectional):
             # refactoring to allow Unidirectionals to have multiple inputs and
             # outputs. And if the whole model is being decoded incrementally,
             # it doesn't matter anyway.
-            return StackAttention.State(
-                self.parent,
-                self.parent.next_stack(
+            return dataclasses.replace(
+                self,
+                stack=self.parent.next_stack(
                     self.stack,
-                    self.parent.action_layer(input_tensor),
+                    self.parent.transform_actions(self.parent.action_layer(input_tensor)),
                     self.parent.input_to_pushed_vector_layer(input_tensor)
                 )
             )
@@ -59,16 +55,16 @@ class StackAttention(Unidirectional):
         def transform_tensors(self,
             func: Callable[[torch.Tensor], torch.Tensor]
         ) -> Unidirectional.State:
-            return StackAttention.State(
-                self.parent,
-                self.stack.transform_tensors(func)
+            return dataclasses.replace(
+                self,
+                stack=self.stack.transform_tensors(func)
             )
 
         def _outputs_and_stack(self,
             input_sequence: torch.Tensor,
             include_first: bool
         ):
-            action_sequence = self.parent.action_layer(input_sequence)
+            action_sequence = self.parent.transform_actions(self.parent.action_layer(input_sequence))
             pushed_vector_sequence = self.parent.input_to_pushed_vector_layer(input_sequence)
             stack = self.stack
             reading_list = []
@@ -82,13 +78,18 @@ class StackAttention(Unidirectional):
                 reading_list.append(stack.reading())
             reading_sequence = torch.stack(reading_list, dim=1)
             outputs = self.parent.stack_reading_to_output_layer(reading_sequence)
-            return outputs, stack
+            extra_outputs = []
+            if self.return_actions:
+                extra_outputs.append(action_sequence.transpose(0, 1))
+            return outputs, stack, extra_outputs
 
         def outputs(self,
             input_sequence: torch.Tensor,
             include_first: bool
         ) -> Union[Iterable[torch.Tensor], Iterable[tuple[torch.Tensor, ...]]]:
-            outputs, stack = self._outputs_and_stack(input_sequence, include_first)
+            outputs, stack, extra_outputs = self._outputs_and_stack(input_sequence, include_first)
+            if extra_outputs:
+                outputs = more_itertools.zip_equal(outputs, *extra_outputs)
             return outputs
 
         def forward(self,
@@ -96,24 +97,31 @@ class StackAttention(Unidirectional):
             return_state: bool,
             include_first: bool
         ) -> Union[torch.Tensor, ForwardResult]:
-            # TODO Add option to return actions, readings, etc.
-            outputs, stack = self._outputs_and_stack(input_sequence, include_first)
+            outputs, stack, extra_outputs = self._outputs_and_stack(input_sequence, include_first)
             if return_state:
-                state = StackAttention.State(self.parent, stack)
-                return ForwardResult(outputs, [], state)
+                state = dataclases.replace(self, stack=stack)
+            else:
+                state = None
+            if extra_outputs or state is not None:
+                return ForwardResult(outputs, extra_outputs, state)
             else:
                 return outputs
 
     def initial_state(self,
         batch_size: int,
         *args: Any,
+        return_actions: bool=False,
         **kwargs: Any
     ) -> Unidirectional.State:
-        return self.State(self, self.initial_stack(
-            batch_size,
-            *args,
-            **kwargs
-        ))
+        return self.State(
+            self,
+            self.initial_stack(
+                batch_size,
+                *args,
+                **kwargs
+            ),
+            return_actions
+        )
 
     def initial_stack(self,
         batch_size: int,
@@ -128,3 +136,6 @@ class StackAttention(Unidirectional):
         pushed_vector: torch.Tensor
     ) -> DifferentiableStack:
         raise NotImplementedError
+
+    def transform_actions(self, actions: torch.Tensor) -> torch.Tensor:
+        return actions

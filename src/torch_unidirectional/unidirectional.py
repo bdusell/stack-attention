@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 import dataclasses
 from typing import Any, Optional, Union
 
@@ -12,7 +12,7 @@ class ForwardResult:
 
     output: torch.Tensor
     r"""The main output tensor of the module."""
-    extra_outputs: list[list[Any]]
+    extra_outputs: Sequence[Sequence[Any]]
     r"""A list of extra outputs returned alongside the main output."""
     state: 'Optional[Unidirectional.State]'
     r"""An optional state representing the updated state of the module after
@@ -226,7 +226,7 @@ class Unidirectional(torch.nn.Module):
                 result.state = state
                 return result
             else:
-                return _unwrap_output_tensor(_stack_outputs(self.outputs(input_sequence, include_first)))
+                return unwrap_output_tensor(_stack_outputs(self.outputs(input_sequence, include_first)))
 
     def initial_state(self,
         batch_size: int,
@@ -279,8 +279,3 @@ def _stack_outputs(
     output_tensor = torch.stack(output_list, dim=1)
     return ForwardResult(output_tensor, extra_lists, None)
 
-def _unwrap_output_tensor(result: ForwardResult) -> Union[torch.Tensor, ForwardResult]:
-    if result.extra_outputs or result.state is not None:
-        return result
-    else:
-        return result.output

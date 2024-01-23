@@ -1,9 +1,11 @@
 from collections.abc import Callable, Iterable
+import dataclasses
 from typing import Any, Optional, Union
 
 import torch
 
 from .unidirectional import Unidirectional, ForwardResult
+from .util import unwrap_output_tensor, ensure_is_forward_result
 
 class ResidualUnidirectional(Unidirectional):
 
@@ -19,13 +21,18 @@ class ResidualUnidirectional(Unidirectional):
         **kwargs: Any
     ) -> Union[torch.Tensor, ForwardResult]:
         if initial_state is None and not return_state and not include_first:
-            return input_sequence + self.wrapped_module(
+            wrapped_result = ensure_is_forward_result(self.wrapped_module(
                 input_sequence,
                 initial_state=None,
                 return_state=return_state,
                 include_first=include_first,
                 **kwargs
-            )
+            ))
+            return unwrap_output_tensor(ForwardResult(
+                input_sequence + wrapped_result.output,
+                wrapped_result.extra_outputs,
+                None
+            ))
         else:
             return super().forward(
                 input_sequence,
@@ -35,23 +42,20 @@ class ResidualUnidirectional(Unidirectional):
                 **kwargs
             )
 
+    @dataclasses.dataclass
     class State(Unidirectional.State):
 
         input_tensor: Optional[torch.Tensor]
         wrapped_state: Unidirectional.State
 
-        def __init__(self,
-            input_tensor: Optional[torch.Tensor],
-            wrapped_state: Unidirectional.State
-        ):
-            super().__init__()
-            self.input_tensor = input_tensor
-            self.wrapped_state = wrapped_state
-
         def next(self, input_tensor: torch.Tensor) -> Unidirectional.State:
-            return ResidualUnidirectional.State(input_tensor, self.wrapped_state.next(input_tensor))
+            return ResidualUnidirectional.State(
+                input_tensor,
+                self.wrapped_state.next(input_tensor)
+            )
 
         def output(self) -> Union[torch.Tensor, tuple[torch.Tensor, ...]]:
+            # TODO Handle multiple outputs
             return self._get_input_tensor() + self.wrapped_state.output()
 
         def _get_input_tensor(self) -> torch.Tensor:

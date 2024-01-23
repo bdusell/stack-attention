@@ -1,13 +1,12 @@
 from collections.abc import Callable, Iterable, Mapping, Sequence
+import dataclasses
+import itertools
 from typing import Any, Optional, Union
 
 import torch
 
-from .unidirectional import (
-    Unidirectional,
-    ForwardResult,
-    _unwrap_output_tensor
-)
+from .unidirectional import Unidirectional, ForwardResult
+from .util import unwrap_output_tensor, ensure_is_forward_result
 
 class ComposedUnidirectional(Unidirectional):
     """Stacks one undirectional model on another, so that the outputs of the
@@ -32,21 +31,23 @@ class ComposedUnidirectional(Unidirectional):
         if initial_state is None and not return_state:
             first_args, first_kwargs = get_args(self.first, args, kwargs, tag_kwargs, include_first)
             second_args, second_kwargs = get_args(self.second, args, kwargs, tag_kwargs, include_first)
-            first_output = self.first(
+            first_result = ensure_is_forward_result(self.first(
                 input_sequence,
                 *first_args,
                 return_state=False,
                 **first_kwargs
-            )
-            if not isinstance(first_output, torch.Tensor):
-                # TODO Handle extra outputs.
-                raise TypeError
-            return self.second(
-                first_output,
+            ))
+            second_result = ensure_is_forward_result(self.second(
+                first_result.output,
                 *second_args,
                 return_state=False,
                 **second_kwargs
-            )
+            ))
+            return unwrap_output_tensor(ForwardResult(
+                second_result.output,
+                tuple(itertools.chain(first_result.extra_outputs, second_result.extra_outputs)),
+                None
+            ))
         else:
             return super().forward(
                 input_sequence,
@@ -57,17 +58,11 @@ class ComposedUnidirectional(Unidirectional):
                 **kwargs
             )
 
+    @dataclasses.dataclass
     class State(Unidirectional.State):
 
         first_state: Unidirectional.State
         second_state: Unidirectional.State
-
-        def __init__(self,
-            first_state: Unidirectional.State,
-            second_state: Unidirectional.State
-        ):
-            self.first_state = first_state
-            self.second_state = second_state
 
         def next(self, input_tensor: torch.Tensor) -> Unidirectional.State:
             new_first_state = self.first_state.next(input_tensor)
@@ -82,7 +77,10 @@ class ComposedUnidirectional(Unidirectional):
             return self.second_state.output()
 
         def detach(self) -> Unidirectional.State:
-            return ComposedUnidirectional.State(self.first_state.detach(), self.second_state.detach())
+            return ComposedUnidirectional.State(
+                self.first_state.detach(),
+                self.second_state.detach()
+            )
 
         def batch_size(self) -> int:
             return self.first_state.batch_size()
@@ -158,7 +156,7 @@ class ComposedUnidirectional(Unidirectional):
                 else:
                     second_output = second_result
                     second_extra_outputs = []
-                return _unwrap_output_tensor(ForwardResult(
+                return unwrap_output_tensor(ForwardResult(
                     second_output,
                     first_extra_outputs + second_extra_outputs,
                     None

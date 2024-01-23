@@ -1,3 +1,4 @@
+import math
 import shutil
 
 def align(table, min_col_width=4, max_table_width=None, cut_middle=True,
@@ -17,7 +18,7 @@ def align(table, min_col_width=4, max_table_width=None, cut_middle=True,
         for j in range(num_cols)
     ]
     for row in table:
-        if max_table_width is None:
+        if max_table_width == math.inf:
             for cell, w in zip(row, widths):
                 print(_ansi_pad(cell, w), end='')
             print()

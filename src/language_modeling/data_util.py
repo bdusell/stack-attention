@@ -38,8 +38,10 @@ def load_prepared_data(args, parser):
         output_vocab=vocabs.output_vocab
     )
 
-def load_vocabularies(args, parser):
-    vocabs = load_shared_vocabularies(args.vocabulary, ToStringVocabularyBuilder())
+def load_vocabularies(args, parser, builder=None):
+    if builder is None:
+        builder = ToStringVocabularyBuilder()
+    vocabs = load_shared_vocabularies(args.vocabulary, builder)
     return VocabularyContainer(
         input_vocab=vocabs.embedding_vocab,
         output_vocab=vocabs.softmax_vocab,

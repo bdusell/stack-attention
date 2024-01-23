@@ -68,7 +68,7 @@ def get_arg(args, prefix, name):
 def finish_plot(args, figures_and_axes, outputs):
     for (fig, ax), name in zip(figures_and_axes, outputs):
         if not get_arg(args, name, 'separate_legend'):
-            ax.legend(ncols=args.legend_columns)
+            ax.legend(ncol=args.legend_columns)
         plt.figure(fig.number)
         plt.tight_layout()
     if args.show:

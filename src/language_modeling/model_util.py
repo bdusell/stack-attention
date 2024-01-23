@@ -38,11 +38,11 @@ class LanguageModelingModelInterface(ModelInterface):
         group.add_argument('--einsum-max-memory', type=humanfriendly.parse_size)
 
     def on_saver_constructed(self, args, saver):
-        if args.einsum_block_size is not None:
+        if hasattr(args, 'einsum_block_size') and args.einsum_block_size is not None:
             self.block_size = args.einsum_block_size
         else:
             self.block_size = torch_semiring_einsum.AutomaticBlockSize(
-                max_cuda_bytes=args.einsum_max_memory
+                max_cuda_bytes=getattr(args, 'einsum_max_memory', None)
             )
 
     def get_kwargs(self, args, input_vocab_size, output_vocab_size):
