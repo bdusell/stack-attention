@@ -3,23 +3,26 @@ set -u
 set -o pipefail
 
 usage() {
-  echo "Usage: $0 <model> <task>"
+  echo "Usage: $0 <output-dir> <task> <stack-attention-type> <model-dirs>..."
 }
 
-model=${1-}
+output_dir=${1-}
 task=${2-}
-if ! shift 2; then
+stack_attention_type=${3-}
+if ! shift 3; then
   usage >&2
   exit 1
 fi
+model_dirs=("$@")
 
-output_dir=../ignore/iclr2024/figures
+best_model=$(python utils/print_best.py "${model_dirs[@]}" | cut -f 1)
+echo "best model: $best_model"
 mkdir -p "$output_dir"
-output_name=$output_dir/$model-$task-heatmap
+output_name=$output_dir/$stack_attention_type-$task-heatmap
 output_file=$output_name.tex
 rm -f -- "$output_name"-*.png
 python cfl_language_modeling/plot_stack_attention_heatmap.py \
-  --load-model ../ignore/iclr2024/cfl/transformer-*-2."$model"-*.2/"$task"/* \
+  --load-model "$best_model" \
   --input-string <( \
     python cfl_language_modeling/print_data.py \
       --data-seed 123 \
@@ -29,7 +32,6 @@ python cfl_language_modeling/plot_stack_attention_heatmap.py \
   ) \
   --task "$task" \
   --separate-legend \
-  --show
   --pgfplots-output "$output_file"
 sed -i '
   s/BOS/\\bos{}/g;

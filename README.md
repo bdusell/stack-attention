@@ -189,6 +189,8 @@ The relevant scripts are under `experiments/cfl`.
 * `submit_test_jobs.bash`: Evaluate the best models on the test sets.
 * `plot_train_and_test.bash`: Generate the plots for the CFL experiments.
 * `print_parameter_counts.bash`: Print the table of parameter counts.
+* `plot_heatmaps.bash`: Generate the heatmaps of superposition stack attention
+  weights.
 
 ### Language Modeling
 
