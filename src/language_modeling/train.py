@@ -25,7 +25,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=
-        'Train a sequence-to-sequence model.'
+        'Train a language model.'
     )
     add_data_arguments(parser)
     model_interface.add_arguments(parser)
