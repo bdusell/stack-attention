@@ -4,8 +4,6 @@ import pathlib
 import sys
 
 import attr
-import matplotlib.pyplot as plt
-import tikzplotlib
 
 from lib.pytorch_tools.saver import read_logs
 from utils.plot_util import add_plot_arguments, run_plot, force_integer_ticks
