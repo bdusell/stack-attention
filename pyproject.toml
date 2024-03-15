@@ -2,7 +2,7 @@
 name = "stack_attention"
 version = "1.0.0"
 description = "Code for the paper \"Stack Attention: Improving the Ability of Transformers to Model Hierarchical Patterns\""
-authors = ["Anonymous"]
+authors = ["Brian DuSell <bdusell@inf.ethz.ch>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
